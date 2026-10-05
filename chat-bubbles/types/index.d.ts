@@ -20,6 +20,9 @@ export type Palette = {
 /** How messages are drawn: recolored text and backgrounds, a border only, or untouched. */
 export type MessageStyle = 'full' | 'outline' | 'off'
 
+/** How your own prompts are drawn: a text bubble, a frame around the app's own row (keeps pasted images), or the app's row untouched. */
+export type PromptStyle = 'bubble' | 'frame' | 'native'
+
 /** Which canvas the theme is tuned for; `auto` follows Claude Code's own theme setting. */
 export type BaseMode = 'auto' | 'dark' | 'light'
 
@@ -37,6 +40,7 @@ declare module 'claude-code' {
       /** Themes the person saved from the mixer. */
       saved: Palette[]
       messageStyle: MessageStyle
+      promptStyle: PromptStyle
       /** Theme the tool rows, spinner, footer, command output and mod panes too. */
       themeChrome: boolean
       base: BaseMode

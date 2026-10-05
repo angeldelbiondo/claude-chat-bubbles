@@ -7,7 +7,7 @@
 import { atom, read, update } from 'claude-code'
 import type { ElementTable, EngineInterface, Register, RenderNode, Timer } from 'claude-code'
 
-import type { BaseMode, MessageStyle, Palette } from '../types'
+import type { BaseMode, MessageStyle, Palette, PromptStyle } from '../types'
 import { isHex, loopGradient, normalizeHex } from './color'
 import { lookOf, stripOf } from './look'
 import type { Base, Look } from './look'
@@ -38,6 +38,7 @@ const query = atom({ plugin: 'chat-bubbles', key: 'query' } as const, '')
 const custom = atom({ plugin: 'chat-bubbles', key: 'custom' } as const, DEFAULT_CUSTOM)
 const saved = atom({ plugin: 'chat-bubbles', key: 'saved' } as const, [])
 const messageStyle = atom({ plugin: 'chat-bubbles', key: 'messageStyle' } as const, 'full')
+const promptStyle = atom({ plugin: 'chat-bubbles', key: 'promptStyle' } as const, 'bubble')
 const themeChrome = atom({ plugin: 'chat-bubbles', key: 'themeChrome' } as const, true)
 const base = atom({ plugin: 'chat-bubbles', key: 'base' } as const, 'auto')
 const resolvedBase = atom({ plugin: 'chat-bubbles', key: 'resolvedBase' } as const, 'dark')
@@ -48,6 +49,8 @@ const notice = atom({ plugin: 'chat-bubbles', key: 'notice' } as const, '')
 
 const STYLES: readonly MessageStyle[] = ['full', 'outline', 'off']
 const STYLE_LABEL: Record<MessageStyle, string> = { full: 'full color', outline: 'outline only', off: 'off' }
+const PROMPTS: readonly PromptStyle[] = ['bubble', 'frame', 'native']
+const PROMPT_LABEL: Record<PromptStyle, string> = { bubble: 'bubble (text only)', frame: 'frame (keeps images)', native: 'native (untouched)' }
 const BASES: readonly BaseMode[] = ['auto', 'dark', 'light']
 
 type Slot = 'accent' | 'secondary' | 'highlight' | 'text' | 'background'
@@ -82,6 +85,7 @@ const HELP = [
   '- `/bubbles list [collection]` — every theme, or one collection',
   '- `/bubbles bg <#hex | auto>` — set a background for every theme',
   '- `/bubbles base <auto | dark | light>` — tune colors for a dark or light canvas',
+  '- `/bubbles prompt <bubble | frame | native>` — your prompts: a text bubble, a frame that keeps pasted images, or untouched',
   '- `/bubbles off` — back to Claude Code\'s own look',
 ].join('\n')
 
@@ -147,6 +151,8 @@ async function restore($: EngineInterface) {
   if (Array.isArray(storedSaved)) await update($, saved, () => storedSaved.filter(isPalette))
   const storedStyle = await get('messageStyle')
   if (STYLES.includes(storedStyle as MessageStyle)) await update($, messageStyle, () => storedStyle as MessageStyle)
+  const storedPrompt = await get('promptStyle')
+  if (PROMPTS.includes(storedPrompt as PromptStyle)) await update($, promptStyle, () => storedPrompt as PromptStyle)
   const storedChrome = await get('themeChrome')
   if (typeof storedChrome === 'boolean') await update($, themeChrome, () => storedChrome)
   const storedBase = await get('base')
@@ -288,6 +294,13 @@ export const register: Register = on => {
       case 'bg':
       case 'background':
         return { text: await setBackground($, arg) }
+      case 'prompt': {
+        const mode = arg.toLowerCase() as PromptStyle
+        if (!PROMPTS.includes(mode)) return { text: `Use \`/bubbles prompt ${PROMPTS.join('\`, \`/bubbles prompt ')}\`. Now: ${PROMPT_LABEL[await read($, promptStyle)]}.` }
+        await update($, promptStyle, () => mode)
+        await persist($, 'promptStyle', mode)
+        return { text: `Your prompts: ${PROMPT_LABEL[mode]}.` }
+      }
       case 'base': {
         const mode = arg.toLowerCase() as BaseMode
         if (!BASES.includes(mode)) return { text: 'Use `/bubbles base auto`, `/bubbles base dark` or `/bubbles base light`.' }
@@ -338,9 +351,13 @@ export const register: Register = on => {
         {bubble}
       </Box>
     )
-    // Off the terminal the engine's own row carries attachments (pasted images,
-    // files) that `text` does not: frame it instead of redrawing, so they stay.
-    if (style === 'outline' || !e.props.isExpanded || e.surface !== 'terminal') {
+    // `bubble` draws the prompt's text itself: predictable size and color, but
+    // the app's own row also carries pasted images and files, which `text` does
+    // not, so `frame` wraps that row instead (the app sizes it, so the frame
+    // can be tighter than a bubble) and `native` leaves it alone.
+    const mode = style === 'outline' ? 'frame' : await read($, promptStyle)
+    if (mode === 'native') return next(e)
+    if (mode === 'frame' || !e.props.isExpanded) {
       return right(
         <Box borderStyle="round" borderColor={look.you} backgroundColor={look.youBg} paddingX={1} flexShrink={1}>
           {await next(e)}
@@ -548,6 +565,7 @@ export const register: Register = on => {
     const mixer = await read($, custom)
     const mine = await read($, saved)
     const style = await read($, messageStyle)
+    const prompt = await read($, promptStyle)
     const isChrome = await read($, themeChrome)
     const mode = await read($, base)
     const canvas = (await read($, resolvedBase)) as Base
@@ -710,6 +728,14 @@ export const register: Register = on => {
               onPress={async () => {
                 const next = await update($, messageStyle, v => STYLES[(STYLES.indexOf(v) + 1) % STYLES.length] ?? 'full')
                 await persist($, 'messageStyle', next)
+              }}
+            />
+            <Button
+              key="prompt-toggle"
+              label={`Prompts: ${PROMPT_LABEL[prompt]}`}
+              onPress={async () => {
+                const next = await update($, promptStyle, v => PROMPTS[(PROMPTS.indexOf(v) + 1) % PROMPTS.length] ?? 'bubble')
+                await persist($, 'promptStyle', next)
               }}
             />
             <Button

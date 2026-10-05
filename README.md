@@ -29,7 +29,7 @@ contrast-checked themes** and the studio.
 | Intensity | Full neon | Each color pulled 25% toward neutral ink, softer backgrounds |
 | Finished tools | Accent stripe (everything is colored) | Gray: only **running** and **failing** tools stand out |
 | Desktop tool rows | Empty colored bars under the app's own tool summary | Left to the app: no empty bars |
-| Pasted images (desktop) | Hidden in full-color mode | Kept: the bubble frames the app's own row |
+| Pasted images (desktop) | Hidden in full-color mode | A choice: `/bubbles prompt frame` keeps them, the default text bubble does not |
 | Command | `/theme` (replaces Claude Code's built-in `/theme`) | `/bubbles` (the built-in `/theme` keeps working) |
 
 ## Install
@@ -61,6 +61,7 @@ Using Theme Studio too? Turn one off: both redraw the same messages.
 | `/bubbles list [collection]` | Every theme, or one collection's |
 | `/bubbles bg <#hex \| auto>` | One background for every theme; text is re-checked for contrast |
 | `/bubbles base <auto \| dark \| light>` | Tune colors for a dark or light canvas |
+| `/bubbles prompt <bubble | frame | native>` | Your prompts: a text bubble (default), a frame around the app's own row (keeps pasted images), or untouched |
 | `/bubbles off` | Back to Claude Code's own look |
 
 ## How the rival color works
@@ -74,16 +75,24 @@ theme's accent:
 Your text on the bubble is held to WCAG AA (4.5:1), the border to 3:1. The test
 suite checks every theme on both canvases.
 
-## Where it draws (and where it can't)
+## Your prompts: three ways to draw them
 
-| Surface | Your message |
-| --- | --- |
-| Terminal | Redrawn as a right-aligned bubble in the rival color |
-| Desktop app | The app's own message row, right-aligned and framed in the rival color (so pasted images and attachments stay) |
+`/bubbles prompt <bubble | frame | native>`, also a button in the studio.
+
+| Mode | What you get | Trade-off |
+| --- | --- | --- |
+| `bubble` (default) | A right-aligned bubble the mod draws itself, in the rival color, sized to your text | Draws the prompt's **text only**: images and files pasted into a prompt are not shown |
+| `frame` | The app's own message row, framed in the rival color | Keeps pasted images, but the app sizes its row, so the frame can be tight and leave empty space |
+| `native` | The app's own row, untouched | No rival color |
+
+## Where it draws (and where it can't)
 
 Plugins can't reach Claude Code's window chrome (the sidebar, the prompt box, the
 app background) or recolor the desktop app's native bubble in place, so no theme
-can.
+can. The app's own message row is also drawn once and sized by the app: the engine
+refuses a tree that sets `width`, `height` or `overflow` on any Box above it, and
+a frame around it that shrinks to fit collapses to nothing. That is why `bubble`
+draws its own text instead of restyling the row.
 
 ## Security and privacy
 

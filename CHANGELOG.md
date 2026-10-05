@@ -3,6 +3,25 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.2] — 2026-10-04
+
+### Added
+
+- `/bubbles prompt <bubble | frame | native>` (and a studio button) to choose how
+  your prompts are drawn.
+
+### Changed
+
+- The default is now `bubble`: the mod draws your prompt's text itself, so the
+  bubble is right-aligned, sized to the text and never squeezed. Measured on the
+  desktop app: a frame around the app's own row wrapped text at ~330px with empty
+  space below, and a frame that shrinks to fit collapsed to nothing.
+- `frame` is the previous behavior (keeps pasted images). `native` leaves the row alone.
+
+### Known limit
+
+- `bubble` shows the prompt's text only; pasted images need `frame` or `native`.
+
 ## Chat Bubbles [0.1.1] — 2026-10-04
 
 ### Fixed

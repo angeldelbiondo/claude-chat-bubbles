@@ -61,9 +61,10 @@ describe('drawing', () => {
   // unchanged). A stand-in Text would not catch that, so these use the real
   // kind of node.
   for (const [surface, isExpanded] of [['desktop', true], ['terminal', false]] as const) {
-    test(`a prompt wraps the engine's own row without a refused tree on ${surface}`, ENGINE, async ($, on) => {
+    test(`frame mode wraps the engine's own row without a refused tree on ${surface}`, ENGINE, async ($, on) => {
       on('ui.render', { component: 'UserMessage' }, () => ({ type: 'engine', ref: 0 }) as never)
       await theme($, 'matrix')
+      await theme($, 'prompt frame')
       const ui = await $.ui.mount({
         plugin: 'chat-bubbles',
         surface,
@@ -73,6 +74,39 @@ describe('drawing', () => {
       expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBeTruthy()
     })
   }
+
+  for (const surface of SURFACES) {
+    test(`bubble mode draws a text bubble on the right on ${surface}, without the engine's row`, ENGINE, async $ => {
+      await theme($, 'matrix')
+      const ui = await $.ui.mount({
+        plugin: 'chat-bubbles',
+        surface,
+        component: 'UserMessage',
+        props: { text: 'hola mundo', origin: { kind: 'sdk' }, isExpanded: true },
+      })
+      expect(await ui.find({ type: 'Text', text: 'hola mundo' })).toBeTruthy()
+      expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBeTruthy()
+    })
+  }
+
+  test('native mode leaves the engine row alone', ENGINE, async ($, on) => {
+    on('ui.render', { component: 'UserMessage' }, () => ({ type: 'engine', ref: 0 }) as never)
+    await theme($, 'matrix')
+    await theme($, 'prompt native')
+    const ui = await $.ui.mount({
+      plugin: 'chat-bubbles',
+      surface: 'desktop',
+      component: 'UserMessage',
+      props: { text: 'hola', origin: { kind: 'sdk' }, isExpanded: true },
+    })
+    expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBe(undefined)
+  })
+
+  test('/bubbles prompt rejects an unknown style and reports the current one', ENGINE, async $ => {
+    const bad = await theme($, 'prompt nope')
+    expect(bad.text).toContain('Use `/bubbles prompt')
+    expect((await theme($, 'prompt frame')).text).toContain('frame')
+  })
 
   test('on desktop tool rows are left to the engine: no empty stripe', ENGINE, async ($, on) => {
     on('ui.render', { component: 'ToolGroup' }, ($, e) => {
