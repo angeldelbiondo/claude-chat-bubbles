@@ -81,7 +81,7 @@ suite checks every theme on both canvases.
 
 | Mode | What you get | Trade-off |
 | --- | --- | --- |
-| `bubble` (default) | Your text in a right-aligned bubble the mod draws itself, in the rival color, sized to the text. Pasted images and files are drawn by the app **above** the bubble, outside the colored block | The app's row leaves a small empty pill under the attachments; the mod covers it by pulling the bubble up a measured amount (5 cells, at the default zoom) |
+| `bubble` (default) | Your text in a right-aligned bubble the mod draws itself, in the rival color, sized to the text. Pasted images and files are drawn by the app **above** the bubble, outside the colored block | The app's row leaves a small empty pill under the attachments; the mod covers it by pulling the bubble up a measured amount (4.7 cells, at the default zoom), which leaves ~10px between the image and the bubble |
 | `frame` | The app's own message row, framed in the rival color | Keeps pasted images, but the app sizes its row, so the frame can be tight and leave empty space |
 | `native` | The app's own row, untouched | No rival color |
 

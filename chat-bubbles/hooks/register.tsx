@@ -80,8 +80,10 @@ const YOURS = ['composer', 'sdk', 'bridge']
 // The app's row for a prompt leaves an empty pill (with no text it is only that,
 // under any attachments). Measured on desktop: a margin unit is 16px, the pill is
 // ~23px and starts ~12px under the attachments, and the bubble would start ~85px
-// below that. Pulling the bubble up 5 units puts its top at the pill's, covering it.
-const PILL_CELLS = 5
+// below that. Pulling it up 5 units covered the pill but left the bubble 5px from
+// the image, touching it; 4.7 (75px) leaves ~10px and still covers the pill, which
+// starts at ~12px. A margin unit is 16px at the default zoom.
+const PILL_CELLS = 4.7
 
 const HELP = [
   '**Chat Bubbles** — messenger-style chat for Claude Code.',

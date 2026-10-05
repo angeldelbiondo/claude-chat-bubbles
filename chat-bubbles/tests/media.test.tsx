@@ -73,7 +73,7 @@ describe('the prompt row on desktop', () => {
     on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
     const ui = await mountPrompt($, 'unknown-2', 'con adjunto')
     const bubble = await ui.find({ type: 'Box', key: 'you-bubble' })
-    expect(bubble?.props.marginTop).toBe(-5)
+    expect(bubble?.props.marginTop).toBe(-4.7)
     expect(bubble?.props.position).toBe('relative')
     // no wrapper Box around the app's row: none of the boxes pulls anything with a bottom margin
     const boxes = await ui.findAll({ type: 'Box' })

@@ -3,6 +3,14 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.5] — 2026-10-05
+
+### Fixed
+
+- The bubble touched the image (5px apart). It is pulled up 4.7 cells instead of 5,
+  which leaves ~10px and still covers the app's empty pill (it starts ~12px under
+  the image).
+
 ## Chat Bubbles [0.1.4] — 2026-10-04
 
 ### Fixed
