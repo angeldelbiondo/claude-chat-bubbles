@@ -3,6 +3,21 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.7] — 2026-10-05
+
+### Fixed
+
+- With an image, a gray ear showed at the bubble's top-right corner. It was the
+  app's empty pill seen through the bubble's rounded corner (transparent outside
+  the arc), and it grew when the bubble was moved off the image. The bubble now
+  sits on a plate of the canvas color.
+
+### Changed
+
+- The record keeps only the row id and a yes/no. The text key it also kept as a
+  fallback is gone: slash command rows (noted by id alone) came out clean, which
+  confirms that the id a row is stored under is the one it is drawn with.
+
 ## Chat Bubbles [0.1.6] — 2026-10-05
 
 ### Fixed

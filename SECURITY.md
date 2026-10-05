@@ -19,9 +19,9 @@ these promises is a vulnerability:
 - Stored data (your theme and options, via `$.store`) stays on your machine and
   is validated before use.
 - Your prompts and slash commands are read only by the `session.append` hook, to
-  note whether each carries media. The start of what you typed stays in session
-  memory; what is written to the plugin store is only the row id and a yes/no (at
-  most 2000 entries), never text. Nothing leaves the process.
+  see whether each carries an image or file. Only the row id and a yes/no are
+  kept (in session memory and in the plugin store, at most 2000 entries); no text
+  is kept. Nothing leaves the process.
 
 `claude plugin validate ./chat-bubbles` lists every engine API the module calls;
 a pull request that adds a call outside `$.ui`, `$.state`, `$.store`,

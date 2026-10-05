@@ -12,7 +12,7 @@ import { isHex, loopGradient, normalizeHex } from './color'
 import { lookOf, stripOf } from './look'
 import type { Base, Look } from './look'
 import { paint } from './markdown'
-import { blocksOf, carriesMedia, isSeen, persistable, remember } from './media'
+import { blocksOf, isSeen, remember } from './media'
 import {
   DEFAULT_CUSTOM,
   GROUPS,
@@ -332,13 +332,11 @@ export const register: Register = on => {
   })
 
   // Note which prompts carry media, before they are drawn. A slash command's own
-  // row comes in by another door; its stored text is the command's markup, so
-  // only its id is kept.
+  // row comes in by another door. Only the row id and a yes/no are kept.
   for (const door of ['prompt', 'command'] as const) {
     on('session.append', { door }, async ($, e, next) => {
       const blocks = blocksOf(e.message.content)
-      const seen = await update($, media, was => remember(was, e.uuid, blocks, door === 'prompt'))
-      await persist($, 'media', persistable(seen))
+      await persist($, 'media', await update($, media, was => remember(was, e.uuid, blocks)))
       return next(e)
     })
   }
@@ -369,13 +367,21 @@ export const register: Register = on => {
     // The engine's own row may not sit under a Box that has `width` or
     // `minWidth` (the engine refuses the tree and draws its own), so the row
     // takes its width from the parent and only the spacer beside it has one.
-    // `up` pulls the row over the app's row above it; both are positioned, so
-    // the later one (this) paints on top. Only then: `frame` puts the app's row
-    // inside this Box, and the engine refuses `position` on a Box above it.
+    // `up` pulls the row over the app's row above it, onto the empty pill that row
+    // leaves. The bubble's rounded corners are transparent, so the pill would show
+    // through them: the bubble sits on a plate of the canvas color. Only then:
+    // `frame` puts the app's row inside this Box, and the engine refuses
+    // `position` on a Box above it.
     const right = (bubble: RenderNode, up = 0) => (
       <Box key="you-bubble" flexDirection="row" justifyContent="flex-end" {...(up ? { marginTop: -up, position: 'relative' as const } : {})}>
         <Box width="18%" flexShrink={0} />
-        {bubble}
+        {up ? (
+          <Box backgroundColor={look.canvas} flexShrink={1}>
+            {bubble}
+          </Box>
+        ) : (
+          bubble
+        )}
       </Box>
     )
     // `bubble` draws the prompt's text itself: predictable size and color, but
@@ -409,7 +415,7 @@ export const register: Register = on => {
     if (e.surface === 'terminal') return right(text)
     // Never seen (sent before the mod was installed): the app's own row, so
     // nothing is lost and no empty pill is left behind.
-    const known = carriesMedia(await read($, media), e.requestId, e.props.text)
+    const known = (await read($, media))[e.requestId]
     if (known === undefined) return next(e)
     if (!known) return right(text)
     return (

@@ -10,7 +10,7 @@
       "name": "chat-bubbles",
       "source": "./chat-bubbles",
       "description": "Messenger-style chat for Claude Code: your prompts on the right in a rival color, Claude on the left, only running or failing tools stand out. 441 themes.",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "category": "productivity",
       "keywords": [
         "theme",

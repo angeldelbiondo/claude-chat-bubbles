@@ -81,7 +81,7 @@ suite checks every theme on both canvases.
 
 | Mode | What you get | Trade-off |
 | --- | --- | --- |
-| `bubble` (default) | Your text in a right-aligned bubble the mod draws itself, in the rival color, sized to the text. Pasted images and files are drawn by the app **above** the bubble, outside the colored block | The app's row leaves a small empty pill under the attachments; the mod covers it by pulling the bubble up a measured amount (4.7 cells, at the default zoom), which leaves ~10px between the image and the bubble |
+| `bubble` (default) | Your text in a right-aligned bubble the mod draws itself, in the rival color, sized to the text. Pasted images and files are drawn by the app **above** the bubble, outside the colored block | The app's row leaves a small empty pill under the attachments; the mod covers it by pulling the bubble up a measured amount (4.7 cells, at the default zoom), which leaves ~10px between the image and the bubble. The bubble sits on a plate of the canvas color, so the app's empty pill can't show through its rounded corners (if your app background differs from the canvas of `/bubbles base`, the four corner wedges can show a faint difference) |
 | `frame` | The app's own message row, framed in the rival color | Keeps pasted images, but the app sizes its row, so the frame can be tight and leave empty space |
 | `native` | The app's own row, untouched | No rival color |
 
@@ -104,7 +104,7 @@ Chat Bubbles only draws. Checked with `claude plugin validate`, it calls:
 | --- | --- |
 | `$.ui.*` | Draw messages, the studio pane, toasts |
 | `$.state` / `$.store` | Remember your theme and options (local to your machine) |
-| `session.append` (your prompts and slash commands) | Notes, per row, whether it carries an image or file, so the app's row is drawn only for those. In session memory it is keyed by the row id and the first 200 characters of what you typed; what is written to the plugin store is only the row id and a yes/no, never any text. Nothing is sent anywhere |
+| `session.append` (your prompts and slash commands) | Looks at the kinds of block in each row (text, image, file) so the app's row is drawn only for prompts that carry an image or file. Only the row id and a yes/no are kept (in session memory and in the plugin store); no text is kept, and nothing is sent anywhere |
 | `$.config.list` | Read whether Claude Code's theme is dark or light |
 | `$.settings.read` | Read `prefersReducedMotion` |
 | `$.command.register`, `$.clock` | The `/bubbles` command, the spinner shimmer |
