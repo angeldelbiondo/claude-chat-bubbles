@@ -66,6 +66,20 @@ describe('the prompt row on desktop', () => {
     expect(await ui.find({ type: 'Text', text: 'de una sesión retomada' })).toBeTruthy()
   })
 
+  // Measured on the desktop app: a Box around the app's row shrinks it and breaks
+  // its own right alignment (the image drifted to the middle, the empty pill to
+  // the left), so the row is drawn bare and the bubble is pulled up over its pill.
+  test('the app row is bare and the bubble is pulled up over its empty pill', ENGINE, async ($, on) => {
+    on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
+    const ui = await mountPrompt($, 'unknown-2', 'con adjunto')
+    const bubble = await ui.find({ type: 'Box', key: 'you-bubble' })
+    expect(bubble?.props.marginTop).toBe(-5)
+    expect(bubble?.props.position).toBe('relative')
+    // no wrapper Box around the app's row: none of the boxes pulls anything with a bottom margin
+    const boxes = await ui.findAll({ type: 'Box' })
+    expect(boxes.some(b => b.props.marginBottom !== undefined)).toBe(false)
+  })
+
   test('an image with no text is the app row alone', ENGINE, async ($, on) => {
     on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
     const ui = await mountPrompt($, 'img-2', '')

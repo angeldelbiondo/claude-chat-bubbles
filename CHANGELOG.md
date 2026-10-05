@@ -3,6 +3,17 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.4] — 2026-10-04
+
+### Fixed
+
+- Attachments drifted to the middle of the chat and an empty pill appeared on the
+  left: a Box around the app's row shrinks it and breaks its own right alignment.
+  The row is now drawn bare, so it stays on the right as the app places it.
+- The empty pill the app's row leaves is now covered: the bubble is pulled up
+  5 cells (80px, measured on desktop: a cell is 16px, the pill ~23px) and
+  positioned so it paints over the pill.
+
 ## Chat Bubbles [0.1.3] — 2026-10-04
 
 ### Added
@@ -12,11 +23,6 @@ versions follow [Semantic Versioning](https://semver.org/).
   carry media from the `session.append` event (a prompt with only text is just
   the bubble; one never seen, as after a resume, keeps the app's row so nothing
   is lost). The record is plugin state, so it survives a reload.
-
-### Known limit
-
-- The app's row leaves an empty pill under the attachments; a negative margin
-  tucks it behind the bubble.
 
 ## Chat Bubbles [0.1.2] — 2026-10-04
 

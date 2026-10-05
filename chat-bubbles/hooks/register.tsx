@@ -77,6 +77,12 @@ const SHIMMER_MS = 260
 const STUDIO_COLUMNS = 64
 const YOURS = ['composer', 'sdk', 'bridge']
 
+// The app's row for a prompt leaves an empty pill (with no text it is only that,
+// under any attachments). Measured on desktop: a margin unit is 16px, the pill is
+// ~23px and starts ~12px under the attachments, and the bubble would start ~85px
+// below that. Pulling the bubble up 5 units puts its top at the pill's, covering it.
+const PILL_CELLS = 5
+
 const HELP = [
   '**Chat Bubbles** — messenger-style chat for Claude Code.',
   '',
@@ -354,8 +360,11 @@ export const register: Register = on => {
     // The engine's own row may not sit under a Box that has `width` or
     // `minWidth` (the engine refuses the tree and draws its own), so the row
     // takes its width from the parent and only the spacer beside it has one.
-    const right = (bubble: RenderNode) => (
-      <Box key="you-bubble" flexDirection="row" justifyContent="flex-end">
+    // `up` pulls the row over the app's row above it; both are positioned, so
+    // the later one (this) paints on top. Only then: `frame` puts the app's row
+    // inside this Box, and the engine refuses `position` on a Box above it.
+    const right = (bubble: RenderNode, up = 0) => (
+      <Box key="you-bubble" flexDirection="row" justifyContent="flex-end" {...(up ? { marginTop: -up, position: 'relative' as const } : {})}>
         <Box width="18%" flexShrink={0} />
         {bubble}
       </Box>
@@ -375,22 +384,23 @@ export const register: Register = on => {
     }
     // Only text: the app's own row is all there is to draw.
     if (e.props.text.trim() === '') return next(e)
-    const bubble = right(
+    const text = (
       <Box borderStyle="round" borderColor={look.you} backgroundColor={look.youBg} paddingX={1} flexShrink={1}>
         <Text color={look.youText} wrap="wrap">
           {e.props.text}
         </Text>
-      </Box>,
+      </Box>
     )
     // A prompt known to have no media is just the bubble. One with media, or
     // one never seen, also gets the app's own row without its text above the
-    // bubble: the images and files, outside the colored block. That row leaves
-    // an empty pill under them; a negative margin tucks it behind the bubble.
-    if (carriesMedia(await read($, media), e.requestId, e.props.text) === false) return bubble
+    // bubble: the images and files, outside the colored block. Nothing wraps
+    // that row (a wrapper shrinks it and breaks its own right alignment); the
+    // empty pill it leaves is covered by pulling the bubble up.
+    if (carriesMedia(await read($, media), e.requestId, e.props.text) === false) return right(text)
     return (
       <Box flexDirection="column">
-        <Box marginBottom={-1}>{await next({ ...e, props: { ...e.props, text: '' } })}</Box>
-        {bubble}
+        {await next({ ...e, props: { ...e.props, text: '' } })}
+        {right(text, PILL_CELLS)}
       </Box>
     )
   })

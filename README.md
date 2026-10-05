@@ -81,7 +81,7 @@ suite checks every theme on both canvases.
 
 | Mode | What you get | Trade-off |
 | --- | --- | --- |
-| `bubble` (default) | Your text in a right-aligned bubble the mod draws itself, in the rival color, sized to the text. Pasted images and files are drawn by the app **above** the bubble, outside the colored block | The app leaves a small empty pill under the attachments (the mod tucks it behind the bubble) |
+| `bubble` (default) | Your text in a right-aligned bubble the mod draws itself, in the rival color, sized to the text. Pasted images and files are drawn by the app **above** the bubble, outside the colored block | The app's row leaves a small empty pill under the attachments; the mod covers it by pulling the bubble up a measured amount (5 cells, at the default zoom) |
 | `frame` | The app's own message row, framed in the rival color | Keeps pasted images, but the app sizes its row, so the frame can be tight and leave empty space |
 | `native` | The app's own row, untouched | No rival color |
 
@@ -90,7 +90,7 @@ suite checks every theme on both canvases.
 Plugins can't reach Claude Code's window chrome (the sidebar, the prompt box, the
 app background) or recolor the desktop app's native bubble in place, so no theme
 can. The app's own message row is also drawn once and sized by the app: the engine
-refuses a tree that sets `width`, `height` or `overflow` on any Box above it, and
+refuses a tree that sets `width`, `minWidth`, `height`, `minHeight`, `overflow` or `position` on any Box above it, and
 a frame around it that shrinks to fit collapses to nothing. That is why `bubble`
 draws its own text instead of restyling the row.
 
