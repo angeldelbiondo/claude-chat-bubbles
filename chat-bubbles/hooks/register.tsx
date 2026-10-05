@@ -12,6 +12,7 @@ import { isHex, loopGradient, normalizeHex } from './color'
 import { lookOf, stripOf } from './look'
 import type { Base, Look } from './look'
 import { paint } from './markdown'
+import { blocksOf, carriesMedia, remember } from './media'
 import {
   DEFAULT_CUSTOM,
   GROUPS,
@@ -39,6 +40,7 @@ const custom = atom({ plugin: 'chat-bubbles', key: 'custom' } as const, DEFAULT_
 const saved = atom({ plugin: 'chat-bubbles', key: 'saved' } as const, [])
 const messageStyle = atom({ plugin: 'chat-bubbles', key: 'messageStyle' } as const, 'full')
 const promptStyle = atom({ plugin: 'chat-bubbles', key: 'promptStyle' } as const, 'bubble')
+const media = atom({ plugin: 'chat-bubbles', key: 'media' } as const, {})
 const themeChrome = atom({ plugin: 'chat-bubbles', key: 'themeChrome' } as const, true)
 const base = atom({ plugin: 'chat-bubbles', key: 'base' } as const, 'auto')
 const resolvedBase = atom({ plugin: 'chat-bubbles', key: 'resolvedBase' } as const, 'dark')
@@ -319,6 +321,13 @@ export const register: Register = on => {
     }
   })
 
+  // Note which prompts carry media, before they are drawn.
+  on('session.append', { door: 'prompt' }, async ($, e, next) => {
+    const blocks = blocksOf(e.message.content)
+    await update($, media, seen => remember(seen, e.uuid, blocks))
+    return next(e)
+  })
+
   // Your prompts: a bubble on the right in the rival color, the way every
   // messenger does it. Other user-role rows (task notifications, messages from
   // agents) stay on the left with a quiet stripe.
@@ -364,12 +373,25 @@ export const register: Register = on => {
         </Box>,
       )
     }
-    return right(
+    // Only text: the app's own row is all there is to draw.
+    if (e.props.text.trim() === '') return next(e)
+    const bubble = right(
       <Box borderStyle="round" borderColor={look.you} backgroundColor={look.youBg} paddingX={1} flexShrink={1}>
         <Text color={look.youText} wrap="wrap">
           {e.props.text}
         </Text>
       </Box>,
+    )
+    // A prompt known to have no media is just the bubble. One with media, or
+    // one never seen, also gets the app's own row without its text above the
+    // bubble: the images and files, outside the colored block. That row leaves
+    // an empty pill under them; a negative margin tucks it behind the bubble.
+    if (carriesMedia(await read($, media), e.requestId, e.props.text) === false) return bubble
+    return (
+      <Box flexDirection="column">
+        <Box marginBottom={-1}>{await next({ ...e, props: { ...e.props, text: '' } })}</Box>
+        {bubble}
+      </Box>
     )
   })
 

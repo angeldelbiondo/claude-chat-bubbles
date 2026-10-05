@@ -4,6 +4,9 @@
 import { describe, expect, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 
+import { ENGINE_ROW } from './helpers'
+
+
 const SURFACES = ['terminal', 'desktop'] as const
 
 // The first engine test pays for the host's cold start; on a busy machine that
@@ -44,7 +47,8 @@ describe('/theme', () => {
 })
 
 describe('drawing', () => {
-  test('a prompt is redrawn as a right-hand bubble in the terminal', ENGINE, async $ => {
+  test('a prompt is redrawn as a right-hand bubble in the terminal', ENGINE, async ($, on) => {
+    on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
     await theme($, 'matrix')
     const ui = await $.ui.mount({
       plugin: 'chat-bubbles',
@@ -76,7 +80,8 @@ describe('drawing', () => {
   }
 
   for (const surface of SURFACES) {
-    test(`bubble mode draws a text bubble on the right on ${surface}, without the engine's row`, ENGINE, async $ => {
+    test(`bubble mode draws a text bubble on the right on ${surface}`, ENGINE, async ($, on) => {
+        on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
       await theme($, 'matrix')
       const ui = await $.ui.mount({
         plugin: 'chat-bubbles',

@@ -3,6 +3,21 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.3] — 2026-10-04
+
+### Added
+
+- Pasted images and files now show with the `bubble` mode: the app draws them
+  above your bubble, outside the colored block. The mod learns which prompts
+  carry media from the `session.append` event (a prompt with only text is just
+  the bubble; one never seen, as after a resume, keeps the app's row so nothing
+  is lost). The record is plugin state, so it survives a reload.
+
+### Known limit
+
+- The app's row leaves an empty pill under the attachments; a negative margin
+  tucks it behind the bubble.
+
 ## Chat Bubbles [0.1.2] — 2026-10-04
 
 ### Added
@@ -17,10 +32,6 @@ versions follow [Semantic Versioning](https://semver.org/).
   desktop app: a frame around the app's own row wrapped text at ~330px with empty
   space below, and a frame that shrinks to fit collapsed to nothing.
 - `frame` is the previous behavior (keeps pasted images). `native` leaves the row alone.
-
-### Known limit
-
-- `bubble` shows the prompt's text only; pasted images need `frame` or `native`.
 
 ## Chat Bubbles [0.1.1] — 2026-10-04
 

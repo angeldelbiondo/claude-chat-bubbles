@@ -41,6 +41,8 @@ declare module 'claude-code' {
       saved: Palette[]
       messageStyle: MessageStyle
       promptStyle: PromptStyle
+      /** Which of your prompts carry pasted images or files, by row id and by text. */
+      media: Record<string, boolean>
       /** Theme the tool rows, spinner, footer, command output and mod panes too. */
       themeChrome: boolean
       base: BaseMode
