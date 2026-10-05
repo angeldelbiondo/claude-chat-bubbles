@@ -56,21 +56,23 @@ describe('drawing', () => {
     expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBeTruthy()
   })
 
-  test('on desktop a prompt keeps the engine row (and its images) inside the bubble', ENGINE, async ($, on) => {
-    on('ui.render', { component: 'UserMessage' }, ($, e) => {
-      const { Text } = $.ui.resolve(e)
-      return <Text>engine row with image</Text>
+  // The engine's own row is a leaf node, and the engine refuses a tree that
+  // sets `width` or `minWidth` on any Box above it (then it draws its own row,
+  // unchanged). A stand-in Text would not catch that, so these use the real
+  // kind of node.
+  for (const [surface, isExpanded] of [['desktop', true], ['terminal', false]] as const) {
+    test(`a prompt wraps the engine's own row without a refused tree on ${surface}`, ENGINE, async ($, on) => {
+      on('ui.render', { component: 'UserMessage' }, () => ({ type: 'engine', ref: 0 }) as never)
+      await theme($, 'matrix')
+      const ui = await $.ui.mount({
+        plugin: 'chat-bubbles',
+        surface,
+        component: 'UserMessage',
+        props: { text: 'look at this', origin: { kind: 'sdk' }, isExpanded },
+      })
+      expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBeTruthy()
     })
-    await theme($, 'matrix')
-    const ui = await $.ui.mount({
-      plugin: 'chat-bubbles',
-      surface: 'desktop',
-      component: 'UserMessage',
-      props: { text: 'look at this', origin: { kind: 'sdk' }, isExpanded: true },
-    })
-    expect(await ui.find({ type: 'Text', text: 'engine row with image' })).toBeTruthy()
-    expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBeTruthy()
-  })
+  }
 
   test('on desktop tool rows are left to the engine: no empty stripe', ENGINE, async ($, on) => {
     on('ui.render', { component: 'ToolGroup' }, ($, e) => {

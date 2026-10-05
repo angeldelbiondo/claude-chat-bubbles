@@ -329,8 +329,11 @@ export const register: Register = on => {
       )
     }
     // Room on the left pushes the bubble right; long prompts wrap inside it.
+    // The engine's own row may not sit under a Box that has `width` or
+    // `minWidth` (the engine refuses the tree and draws its own), so the row
+    // takes its width from the parent and only the spacer beside it has one.
     const right = (bubble: RenderNode) => (
-      <Box key="you-bubble" flexDirection="row" justifyContent="flex-end" width="100%">
+      <Box key="you-bubble" flexDirection="row" justifyContent="flex-end">
         <Box width="18%" flexShrink={0} />
         {bubble}
       </Box>
