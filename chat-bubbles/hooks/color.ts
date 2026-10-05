@@ -1,4 +1,4 @@
-// Color math for Theme Studio: hex parsing, mixing, gradients and WCAG
+// Color math for Chat Bubbles: hex parsing, mixing, gradients and WCAG
 // contrast. Pure functions, no engine access, so they are easy to test.
 
 export type Rgb = readonly [number, number, number]
@@ -71,7 +71,23 @@ export const ensureContrast = (fg: string, bg: string, min = 4.5): string => {
   return mix(fg, target, hi)
 }
 
-export const hslToHex = (h: number, s: number, l: number): string => {
+/** Hue in degrees, 0 to 360; 0 for greys. */
+export const hueOf = (hex: string): number => {
+  const [r, g, b] = toRgb(hex).map(v => v / 255) as [number, number, number]
+  const max = Math.max(r, g, b)
+  const d = max - Math.min(r, g, b)
+  if (d === 0) return 0
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+  return (h * 60 + 360) % 360
+}
+
+/** Cool hues (yellow-green through violet) against warm ones (magenta through yellow). */
+export const isCool = (hex: string): boolean => {
+  const h = hueOf(hex)
+  return h >= 75 && h < 285
+}
+
+export const hslToHex =(h: number, s: number, l: number): string => {
   const k = (n: number) => (n + h / 30) % 12
   const a = s * Math.min(l, 1 - l)
   const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))

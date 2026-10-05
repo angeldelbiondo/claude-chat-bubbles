@@ -107,8 +107,8 @@ export const paint = (K: Kit, md: string, look: Look): RenderNode[] => {
       const title = heading[2] ?? ''
       out.push(
         level === 1 ? (
-          <Text bold color={look.onAccent} backgroundColor={look.accent}>
-            {` ${title} `}
+          <Text bold underline color={look.accent}>
+            {inline(K, title, look)}
           </Text>
         ) : (
           <Text bold color={level === 2 ? look.accent : look.secondary}>

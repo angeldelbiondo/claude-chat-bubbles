@@ -1,36 +1,25 @@
 {
-  "name": "claude-theme-studio",
-  "description": "Theme Studio and Neon Usage: color themes and a live usage band for Claude Code.",
+  "name": "claude-chat-bubbles",
+  "description": "Chat Bubbles: messenger-style chat for Claude Code.",
   "owner": {
-    "name": "Alliance Optima"
+    "name": "Angel Del Biondo",
+    "url": "https://github.com/angeldelbiondo"
   },
   "plugins": [
     {
-      "name": "theme-studio",
-      "source": "./theme-studio",
-      "description": "Recolor Claude Code's chat from 441 palettes or one you mix: prompts, replies, tool rows, spinner, footer and panes.",
-      "version": "1.1.0",
+      "name": "chat-bubbles",
+      "source": "./chat-bubbles",
+      "description": "Messenger-style chat for Claude Code: your prompts on the right in a rival color, Claude on the left, only running or failing tools stand out. 441 themes.",
+      "version": "0.1.0",
       "category": "productivity",
       "keywords": [
         "theme",
+        "chat",
+        "bubbles",
+        "messenger",
         "colors",
-        "appearance",
-        "customization",
+        "accessibility",
         "ui"
-      ]
-    },
-    {
-      "name": "neon-usage",
-      "source": "./neon-usage",
-      "description": "A one-line neon band above the prompt: context fill, rate-limit windows and session cost.",
-      "version": "1.0.0",
-      "category": "productivity",
-      "keywords": [
-        "usage",
-        "context",
-        "rate-limits",
-        "cost",
-        "status"
       ]
     }
   ]

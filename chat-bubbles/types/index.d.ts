@@ -25,7 +25,7 @@ export type BaseMode = 'auto' | 'dark' | 'light'
 
 declare module 'claude-code' {
   interface PluginState {
-    'theme-studio': {
+    'chat-bubbles': {
       /** The theme in use, or null for Claude Code's own look. */
       active: Palette | null
       /** The collection the studio is showing. */

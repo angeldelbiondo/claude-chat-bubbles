@@ -1,6 +1,8 @@
-// Theme Studio: recolors Claude Code's chat (prompts, replies, tool rows, the
-// spinner, the footer, command output and mod panes) from 441 palettes or one
-// you mix. `/theme` opens the studio; `/theme help` lists the commands.
+// Chat Bubbles: Claude Code's chat laid out like a messenger. Your prompts are a
+// bubble on the right in a rival color, Claude's replies a quiet card on the left,
+// and only running or failing tools stand out. Colors come from 441 palettes or
+// one you mix. `/bubbles` opens the studio; `/bubbles help` lists the commands.
+// Forked from Theme Studio by Alliance Optima (MIT).
 
 import { atom, read, update } from 'claude-code'
 import type { ElementTable, EngineInterface, Register, RenderNode, Timer } from 'claude-code'
@@ -24,25 +26,25 @@ import {
 } from './palette'
 import { PRESETS } from './presets'
 
-const PANE = 'theme-studio'
+const PANE = 'chat-bubbles'
 
 // ── State ────────────────────────────────────────────────────────────────
 // Session values live in $.state (they survive hot reloads); the ones worth
 // keeping between sessions are mirrored to $.store under the same key.
 
-const active = atom({ plugin: 'theme-studio', key: 'active' } as const, null)
-const group = atom({ plugin: 'theme-studio', key: 'group' } as const, GROUPS[0] ?? MINE)
-const query = atom({ plugin: 'theme-studio', key: 'query' } as const, '')
-const custom = atom({ plugin: 'theme-studio', key: 'custom' } as const, DEFAULT_CUSTOM)
-const saved = atom({ plugin: 'theme-studio', key: 'saved' } as const, [])
-const messageStyle = atom({ plugin: 'theme-studio', key: 'messageStyle' } as const, 'full')
-const themeChrome = atom({ plugin: 'theme-studio', key: 'themeChrome' } as const, true)
-const base = atom({ plugin: 'theme-studio', key: 'base' } as const, 'auto')
-const resolvedBase = atom({ plugin: 'theme-studio', key: 'resolvedBase' } as const, 'dark')
-const bgOverride = atom({ plugin: 'theme-studio', key: 'bgOverride' } as const, null)
-const reducedMotion = atom({ plugin: 'theme-studio', key: 'reducedMotion' } as const, false)
-const frame = atom({ plugin: 'theme-studio', key: 'frame' } as const, 0)
-const notice = atom({ plugin: 'theme-studio', key: 'notice' } as const, '')
+const active = atom({ plugin: 'chat-bubbles', key: 'active' } as const, null)
+const group = atom({ plugin: 'chat-bubbles', key: 'group' } as const, GROUPS[0] ?? MINE)
+const query = atom({ plugin: 'chat-bubbles', key: 'query' } as const, '')
+const custom = atom({ plugin: 'chat-bubbles', key: 'custom' } as const, DEFAULT_CUSTOM)
+const saved = atom({ plugin: 'chat-bubbles', key: 'saved' } as const, [])
+const messageStyle = atom({ plugin: 'chat-bubbles', key: 'messageStyle' } as const, 'full')
+const themeChrome = atom({ plugin: 'chat-bubbles', key: 'themeChrome' } as const, true)
+const base = atom({ plugin: 'chat-bubbles', key: 'base' } as const, 'auto')
+const resolvedBase = atom({ plugin: 'chat-bubbles', key: 'resolvedBase' } as const, 'dark')
+const bgOverride = atom({ plugin: 'chat-bubbles', key: 'bgOverride' } as const, null)
+const reducedMotion = atom({ plugin: 'chat-bubbles', key: 'reducedMotion' } as const, false)
+const frame = atom({ plugin: 'chat-bubbles', key: 'frame' } as const, 0)
+const notice = atom({ plugin: 'chat-bubbles', key: 'notice' } as const, '')
 
 const STYLES: readonly MessageStyle[] = ['full', 'outline', 'off']
 const STYLE_LABEL: Record<MessageStyle, string> = { full: 'full color', outline: 'outline only', off: 'off' }
@@ -71,16 +73,16 @@ const STUDIO_COLUMNS = 64
 const YOURS = ['composer', 'sdk', 'bridge']
 
 const HELP = [
-  '**Theme Studio** — recolor the chat.',
+  '**Chat Bubbles** — messenger-style chat for Claude Code.',
   '',
-  '- `/theme` — open the studio (browse, search, mix your own)',
-  '- `/theme <name>` — apply a theme by name, e.g. `/theme dracula`',
-  '- `/theme random [collection]` — surprise me, e.g. `/theme random hockey`',
-  '- `/theme next` · `/theme prev` — step through the current collection',
-  '- `/theme list [collection]` — every theme, or one collection',
-  '- `/theme bg <#hex | auto>` — set a background for every theme',
-  '- `/theme base <auto | dark | light>` — tune colors for a dark or light canvas',
-  '- `/theme off` — back to Claude Code\'s own look',
+  '- `/bubbles` — open the studio (browse, search, mix your own)',
+  '- `/bubbles <name>` — apply a theme by name, e.g. `/bubbles dracula`',
+  '- `/bubbles random [collection]` — surprise me, e.g. `/bubbles random hockey`',
+  '- `/bubbles next` · `/bubbles prev` — step through the current collection',
+  '- `/bubbles list [collection]` — every theme, or one collection',
+  '- `/bubbles bg <#hex | auto>` — set a background for every theme',
+  '- `/bubbles base <auto | dark | light>` — tune colors for a dark or light canvas',
+  '- `/bubbles off` — back to Claude Code\'s own look',
 ].join('\n')
 
 // ── Engine-facing helpers (top level, as the engine requires for `$`) ─────
@@ -177,7 +179,7 @@ async function setBackground($: EngineInterface, raw: string) {
     return 'Background back to each theme\'s own tint.'
   }
   const hex = normalizeHex(arg)
-  if (!hex) return `\`${raw.trim()}\` isn't a hex color. Try \`/theme bg #1a1a2e\` or \`/theme bg auto\`.`
+  if (!hex) return `\`${raw.trim()}\` isn't a hex color. Try \`/bubbles bg #1a1a2e\` or \`/bubbles bg auto\`.`
   await update($, bgOverride, () => hex)
   await persist($, 'bgOverride', hex)
   return `Background set to \`${hex}\` for every theme. Text is re-checked for contrast against it.`
@@ -191,7 +193,7 @@ async function setBase($: EngineInterface, mode: BaseMode) {
 
 /** Opens the studio: docked beside the transcript where the surface docks panes, else above the prompt. */
 async function openStudio($: EngineInterface) {
-  return $.ui.open({ id: PANE, title: 'Theme Studio', focus: true, closeOnEscape: true, columns: STUDIO_COLUMNS })
+  return $.ui.open({ id: PANE, title: 'Chat Bubbles', focus: true, closeOnEscape: true, columns: STUDIO_COLUMNS })
 }
 
 // ── Pure drawing helpers ─────────────────────────────────────────────────
@@ -210,8 +212,8 @@ const listing = (collection?: string, mine: readonly Palette[] = []) => {
       return names.length ? `**${g}** (${names.length}): ${names.join(', ')}` : ''
     })
     .filter(Boolean)
-  if (lines.length === 0) return `No collection matches \`${collection}\`. Try \`/theme list\`.`
-  return `${all.length} themes in ${GROUPS.length - 1} collections. Apply one with \`/theme <name>\`.\n\n${lines.join('\n\n')}`
+  if (lines.length === 0) return `No collection matches \`${collection}\`. Try \`/bubbles list\`.`
+  return `${all.length} themes in ${GROUPS.length - 1} collections. Apply one with \`/bubbles <name>\`.\n\n${lines.join('\n\n')}`
 }
 
 // ── Hooks ────────────────────────────────────────────────────────────────
@@ -225,8 +227,8 @@ export const register: Register = on => {
 
   on('session.start', async ($, e, next) => {
     await $.command.register({
-      name: 'theme',
-      description: 'Recolor the chat: open Theme Studio, or /theme <name> | random | next | list | bg | base | off',
+      name: 'bubbles',
+      description: 'Recolor the chat: open the studio, or /bubbles <name> | random | next | list | bg | base | off',
       argumentHint: '[name | random | next | prev | list | bg <hex> | base <mode> | off | help]',
     })
     await restore($)
@@ -254,13 +256,13 @@ export const register: Register = on => {
     return next(e)
   })
 
-  on('command.run', { command: 'theme' }, async ($, e) => {
+  on('command.run', { command: 'bubbles' }, async ($, e) => {
     const [verb = '', ...rest] = e.args.trim().split(/\s+/)
     const arg = rest.join(' ')
     switch (verb.toLowerCase()) {
       case '':
         await openStudio($)
-        return { text: 'Theme Studio opened.' }
+        return { text: 'Chat Bubbles studio opened.' }
       case 'help':
       case '?':
         return { text: HELP }
@@ -274,7 +276,7 @@ export const register: Register = on => {
         return { text: listing(arg || undefined, await read($, saved)) }
       case 'random': {
         const pick = pickRandom(arg || undefined)
-        if (!pick) return { text: `No collection matches \`${arg}\`. Try \`/theme list\`.` }
+        if (!pick) return { text: `No collection matches \`${arg}\`. Try \`/bubbles list\`.` }
         await apply($, pick)
         return { text: `🎲 ${pick.name} · ${pick.group}` }
       }
@@ -288,7 +290,7 @@ export const register: Register = on => {
         return { text: await setBackground($, arg) }
       case 'base': {
         const mode = arg.toLowerCase() as BaseMode
-        if (!BASES.includes(mode)) return { text: 'Use `/theme base auto`, `/theme base dark` or `/theme base light`.' }
+        if (!BASES.includes(mode)) return { text: 'Use `/bubbles base auto`, `/bubbles base dark` or `/bubbles base light`.' }
         await setBase($, mode)
         return { text: `Colors tuned for a ${await read($, resolvedBase)} canvas (${mode}).` }
       }
@@ -296,7 +298,7 @@ export const register: Register = on => {
         const hit = findPreset(e.args, await read($, saved))
         if (!hit) {
           const near = searchPresets(e.args, await read($, saved), 5).map(one => `\`${one.name}\``)
-          return { text: `No theme matches "${e.args.trim()}".${near.length ? ` Close: ${near.join(', ')}.` : ''} Try \`/theme list\`.` }
+          return { text: `No theme matches "${e.args.trim()}".${near.length ? ` Close: ${near.join(', ')}.` : ''} Try \`/bubbles list\`.` }
         }
         await apply($, hit)
         return { text: `🎨 ${hit.name} · ${hit.group}` }
@@ -304,8 +306,9 @@ export const register: Register = on => {
     }
   })
 
-  // Your prompts: tinted bubble, accent border, a YOU chip. Other user-role rows
-  // (task notifications, messages from agents) get a quiet stripe instead.
+  // Your prompts: a bubble on the right in the rival color, the way every
+  // messenger does it. Other user-role rows (task notifications, messages from
+  // agents) stay on the left with a quiet stripe.
   on('ui.render', { component: 'UserMessage' }, async ($, e, next) => {
     const style = await read($, messageStyle)
     const current = await currentLook($)
@@ -318,33 +321,39 @@ export const register: Register = on => {
       if (!(await read($, themeChrome))) return next(e)
       return (
         <Box flexDirection="row">
-          <Text color={look.secondary}>{'▏'}</Text>
+          <Text color={look.muted}>{'▏'}</Text>
           <Box flexDirection="column" flexGrow={1}>
             {await next(e)}
           </Box>
         </Box>
       )
     }
-    if (style === 'outline' || !e.props.isExpanded) {
-      return (
-        <Box borderStyle="round" borderColor={look.accent} paddingX={1}>
+    // Room on the left pushes the bubble right; long prompts wrap inside it.
+    const right = (bubble: RenderNode) => (
+      <Box key="you-bubble" flexDirection="row" justifyContent="flex-end" width="100%">
+        <Box width="18%" flexShrink={0} />
+        {bubble}
+      </Box>
+    )
+    // Off the terminal the engine's own row carries attachments (pasted images,
+    // files) that `text` does not: frame it instead of redrawing, so they stay.
+    if (style === 'outline' || !e.props.isExpanded || e.surface !== 'terminal') {
+      return right(
+        <Box borderStyle="round" borderColor={look.you} backgroundColor={look.youBg} paddingX={1} flexShrink={1}>
           {await next(e)}
-        </Box>
+        </Box>,
       )
     }
-    return (
-      <Box borderStyle="round" borderColor={look.accent} backgroundColor={look.promptBg} paddingX={1}>
-        <Text color={look.promptText}>
-          <Text bold color={look.onAccent} backgroundColor={look.accent}>
-            {' YOU '}
-          </Text>
-          {` ${e.props.text}`}
+    return right(
+      <Box borderStyle="round" borderColor={look.you} backgroundColor={look.youBg} paddingX={1} flexShrink={1}>
+        <Text color={look.youText} wrap="wrap">
+          {e.props.text}
         </Text>
-      </Box>
+      </Box>,
     )
   })
 
-  // Claude's replies: a tinted card with headings, lists, bold and code in theme colors.
+  // Claude's replies: on the left, a quiet card; the label is text, not a bar.
   on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
     const style = await read($, messageStyle)
     const current = await currentLook($)
@@ -354,16 +363,16 @@ export const register: Register = on => {
     const { Box, Text } = els
     if (style === 'outline' || e.props.text.length > 30000) {
       return (
-        <Box borderStyle="round" borderColor={look.secondary} paddingX={1}>
+        <Box borderStyle="round" borderColor={look.frame} paddingX={1}>
           {await next(e)}
         </Box>
       )
     }
     return (
-      <Box flexDirection="column" borderStyle="round" borderColor={look.secondary} backgroundColor={look.replyBg} paddingX={1}>
+      <Box flexDirection="column" borderStyle="round" borderColor={look.frame} backgroundColor={look.replyBg} paddingX={1}>
         {e.props.isFirstOfReply ? (
-          <Text bold color={look.onSecondary} backgroundColor={look.secondary}>
-            {' ✦ CLAUDE '}
+          <Text bold color={look.accent}>
+            {'✦ Claude'}
           </Text>
         ) : null}
         {paint(els, e.props.text, look)}
@@ -438,31 +447,34 @@ export const register: Register = on => {
     </K.Box>
   )
 
+  // Tool rows are striped in the terminal only: the desktop app draws its own
+  // folded tool summary, and a stripe around it is an empty bar.
+  // Finished tools stay quiet so the ones running (highlight) and failing (red) are what you see.
   on('ui.render', { component: 'ToolUse' }, async ($, e, next) => {
     const current = await chromeLook($)
-    if (!current) return next(e)
+    if (!current || e.surface !== 'terminal') return next(e)
     const { look } = current
-    const mark = e.props.isErrored ? look.error : e.props.isRunning ? look.highlight : look.accent
-    return striped(look, mark, await next(e), $.ui.resolve(e))
+    const mark = e.props.isErrored ? look.error : e.props.isRunning ? look.highlight : look.muted
+    return striped(look, mark, await next(e), $.ui.resolve(e), e.props.isErrored ? 0.16 : 0.06)
   })
 
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
     const current = await chromeLook($)
-    if (!current) return next(e)
+    if (!current || e.surface !== 'terminal') return next(e)
     const { look } = current
-    return striped(look, e.props.isActive ? look.highlight : look.secondary, await next(e), $.ui.resolve(e), 0.08)
+    return striped(look, e.props.isActive ? look.highlight : look.muted, await next(e), $.ui.resolve(e), 0.05)
   })
 
   on('ui.render', { component: 'ToolResult' }, async ($, e, next) => {
     const current = await chromeLook($)
-    if (!current) return next(e)
+    if (!current || e.surface !== 'terminal') return next(e)
     const { look } = current
     return striped(look, e.props.isErrored ? look.error : look.muted, await next(e), $.ui.resolve(e), 0, '▏')
   })
 
   on('ui.render', { component: 'CommandOutput' }, async ($, e, next) => {
     const current = await chromeLook($)
-    if (!current) return next(e)
+    if (!current || e.surface !== 'terminal') return next(e)
     const { look } = current
     return striped(look, e.props.isErrored ? look.error : look.highlight, await next(e), $.ui.resolve(e), 0.08)
   })
@@ -559,7 +571,7 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column" gap={1}>
         <Box flexDirection="column">
-          {heading('🎨 THEME STUDIO')}
+          {heading('💬 CHAT BUBBLES')}
           <Box gap={1}>
             <Text color={ui.text}>Active:</Text>
             {pal ? swatch(pal) : null}

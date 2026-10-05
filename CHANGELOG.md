@@ -1,8 +1,35 @@
 # Changelog
 
-All notable changes to both plugins. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
-[Semantic Versioning](https://semver.org/).
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
+versions follow [Semantic Versioning](https://semver.org/).
+
+## Chat Bubbles [0.1.0] — 2026-10-04
+
+Forked from Theme Studio 1.1.0.
+
+### Changed
+
+- Your prompts are a right-aligned bubble, the way messengers lay them out.
+- Your bubble takes a rival color: orange under a cool theme, sky blue under a
+  warm one, contrast-checked on dark and light canvases.
+- Claude's replies are a quiet card with a `✦ Claude` label instead of a solid bar;
+  `#` headings are underlined instead of filled.
+- Every theme color is pulled 25% toward neutral ink; backgrounds are softer.
+- Finished tools are gray, so only running and failing tools stand out.
+- The command is `/bubbles`, so Claude Code's built-in `/theme` keeps working.
+
+### Fixed
+
+- Desktop app: no more empty colored bars under the app's own tool summary.
+- Desktop app: images and attachments pasted into a prompt stay visible.
+
+### Removed
+
+- Neon Usage (the usage band); use any usage mod alongside.
+
+---
+
+Theme Studio's history, before the fork:
 
 ## [1.1.0] — 2026-10-04
 

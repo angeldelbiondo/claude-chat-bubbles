@@ -1,164 +1,140 @@
-# Theme Studio for Claude Code
+# Chat Bubbles for Claude Code
 
-Recolor Claude Code's chat with one command. **441 themes in 63 collections**, from
-Synthwave and Dracula to Hogwarts houses, hockey teams and Québec, or mix your own.
-Every theme is contrast-checked, so it stays readable on dark and light canvases.
-
-Comes with **Neon Usage**, a one-line band above the prompt that shows how full
-your context is, your rate-limit windows and what the session has cost, in your
-theme's colors.
-
-<p align="center">
-  <img src="docs/demo.webp" alt="Animated demo: a Claude Code chat switching themes, from Synthwave to Gryffindor, Canadiens de Montréal, Jurassic Park, Under the Sea, The Matrix, Cherry Blossom and Night City; each switch recolors the prompt, the reply, the tool rows, the spinner and the usage band" width="380">
-  <br>
-  <sub>Stylized demo · <a href="https://github.com/allianceoptima/claude-theme-studio/raw/main/docs/demo.mp4">download the full 26-second video (MP4)</a></sub>
-</p>
+Your chat with Claude, laid out like every messenger you already use: **your
+messages on the right, Claude's on the left**, and your bubble in a **rival
+color** so you can tell who said what before you read a word.
 
 ```
-/theme dracula              apply a theme by name
-/theme random hockey        surprise me (optionally from one collection)
-/theme                      open the studio: browse, search, mix your own
+                                   ╭──────────────────────────────╮
+                                   │ fix the failing login test   │  ← you: right, warm
+                                   ╰──────────────────────────────╯
+╭──────────────────────────────────────────────────────────────────╮
+│ ✦ Claude                                                         │  ← Claude: left, quiet
+│ The test mocks an expired token. I updated the fixture and…      │
+╰──────────────────────────────────────────────────────────────────╯
+▍ Bash(npm test)  ✗ 2 failed                                          ← only failures shout
 ```
 
-## What it colors
+A fork of [Theme Studio](https://github.com/allianceoptima/claude-theme-studio)
+by Alliance Optima, redesigned for reading speed. It keeps all **441
+contrast-checked themes** and the studio.
 
-| Where | What changes |
-| --- | --- |
-| Your prompts | Tinted bubble, accent border, a **YOU** chip, text in the theme's color |
-| Claude's replies | Tinted card with a **✦ CLAUDE** chip; headings, lists, quotes, **bold**, *italic*, `inline code` and ~~strike~~ in theme colors |
-| Tool rows | A colored stripe and strip on `Bash(…)`, `Read(…)` and friends: accent when done, highlight while running, red on error |
-| Folded tool runs, tool results | Matching stripes, so a call and its output read as one |
-| The spinner | A twinkling spark ✦ and the word shimmering letter by letter through the palette |
-| The footer | Mode labels in the theme's quiet color and a 🎨 chip with the theme's name; click it to open the studio |
-| End-of-turn line | `✦ Baked for 12s` in theme colors (terminal) |
-| Slash-command output | A tinted strip, so `/theme`, `/cost` and friends stand out |
-| Mod panes | Every pane a plugin opens gets the theme's backdrop |
+## What's different from Theme Studio
 
-### Gallery
-
-Eight of the 441 themes on the same conversation:
-
-<img src="docs/themes-grid.png" alt="A grid of eight recolored chats: Synthwave '84, Gryffindor Common Room, Canadiens de Montréal, Jurassic Park, Under the Sea, The Matrix, Cherry Blossom and Night City" width="100%">
-
-Mix your own from hex codes, roll a random one, or browse 63 collections:
-
-<img src="docs/features.png" alt="Left: the mixer with four hex color chips recoloring the chat. Middle: /theme random landing on Deep Nebula. Right: 441 themes in 63 collections" width="100%">
-
-<sub>The gallery is drawn in a cut-paper style from the plugin's real palettes and
-layout; in Claude Code it renders in your terminal's or the desktop app's own type.</sub>
-
-What it doesn't change: Claude Code's own window chrome (the sidebar, the prompt
-box, the app background). Plugins can't reach those, so no theme can either.
-Code blocks keep their syntax highlighting; tables and lines with links are drawn
-by Claude Code itself so links stay clickable.
+| | Theme Studio | Chat Bubbles |
+| --- | --- | --- |
+| Your messages | Full width, left, a **YOU** chip | **Right-aligned bubble**, like a messenger |
+| Your bubble color | The theme's accent (same family as Claude's) | A **rival color**: orange under a cool theme, sky blue under a warm one |
+| Claude's replies | Solid colored header bar | A quiet card with a `✦ Claude` label |
+| Intensity | Full neon | Each color pulled 25% toward neutral ink, softer backgrounds |
+| Finished tools | Accent stripe (everything is colored) | Gray: only **running** and **failing** tools stand out |
+| Desktop tool rows | Empty colored bars under the app's own tool summary | Left to the app: no empty bars |
+| Pasted images (desktop) | Hidden in full-color mode | Kept: the bubble frames the app's own row |
+| Command | `/theme` (replaces Claude Code's built-in `/theme`) | `/bubbles` (the built-in `/theme` keeps working) |
 
 ## Install
 
-Requires a Claude Code release with plugin function hooks (2.1.286 or later),
-in the terminal or the desktop app's Code tab.
+Requires Claude Code 2.1.286 or later (plugin function hooks), in the terminal or
+the desktop app's Code tab.
 
 ```
-/plugin marketplace add allianceoptima/claude-theme-studio
-/plugin install theme-studio@claude-theme-studio
-/plugin install neon-usage@claude-theme-studio
+/plugin marketplace add angeldelbiondo/claude-chat-bubbles
+/plugin install chat-bubbles@claude-chat-bubbles
 ```
 
-Start a new session (or restart the desktop app) and type `/theme`.
+Start a new session (or run `/reload-plugins`), then:
+
+```
+/bubbles matrix
+```
+
+Using Theme Studio too? Turn one off: both redraw the same messages.
 
 ## Commands
 
 | Command | Does |
 | --- | --- |
-| `/theme` | Open Theme Studio: search, browse collections, mix your own, toggle options. Clicking the 🎨 chip in the footer does the same |
-| `/theme <name>` | Apply a theme. Matching ignores case and accents and takes prefixes: `/theme jurassic`, `/theme montreal` |
-| `/theme random [collection]` | A random theme, optionally from one collection: `/theme random zodiac` |
-| `/theme next` · `/theme prev` | Step through the current theme's collection |
-| `/theme list [collection]` | Every theme, or one collection's |
-| `/theme bg <#hex \| auto>` | One background for every theme; text is re-checked for contrast against it |
-| `/theme base <auto \| dark \| light>` | Tune colors for a dark or light canvas; `auto` follows Claude Code's theme setting |
-| `/theme off` | Back to Claude Code's own look |
-| `/theme help` | This list |
-| `/neon-usage [on \| off]` | Show or hide the usage band |
+| `/bubbles` | Open the studio: search, browse collections, mix your own, toggle options |
+| `/bubbles <name>` | Apply a theme: `/bubbles dracula`, `/bubbles matrix` (ignores case and accents, takes prefixes) |
+| `/bubbles random [collection]` | A random theme, optionally from one collection |
+| `/bubbles next` · `/bubbles prev` | Step through the current collection |
+| `/bubbles list [collection]` | Every theme, or one collection's |
+| `/bubbles bg <#hex \| auto>` | One background for every theme; text is re-checked for contrast |
+| `/bubbles base <auto \| dark \| light>` | Tune colors for a dark or light canvas |
+| `/bubbles off` | Back to Claude Code's own look |
 
-Your theme, saved mixes and options are remembered across sessions.
+## How the rival color works
 
-## Mix your own
+The bubble color is picked from the opposite side of the color wheel from the
+theme's accent:
 
-In the studio, set **Accent**, **Secondary**, **Highlight**, **Text** and an
-optional **Background** as hex codes (`#ff2bd6` or `f0f`), press **Apply custom**,
-then name it under **Save as** to keep it in *My themes*. **🎲 Random neon** rolls a
-split-complementary palette around a random hue.
+- **Cool theme** (greens, blues, violets) → **orange** bubble (`#ff8c42` dark / `#c2410c` light)
+- **Warm theme** (reds, pinks, yellows) → **sky blue** bubble (`#38bdf8` dark / `#0369a1` light)
 
-| Slot | Used for |
+Your text on the bubble is held to WCAG AA (4.5:1), the border to 3:1. The test
+suite checks every theme on both canvases.
+
+## Where it draws (and where it can't)
+
+| Surface | Your message |
 | --- | --- |
-| Accent | Borders, headings, chips, the first gradient stop |
-| Secondary | Reply cards, bullets, the second gradient stop |
-| Highlight | Bold text, inline code, running tools, the hottest gradient stop |
-| Text | Body text |
-| Background | Message backgrounds (otherwise tinted from the accent) |
+| Terminal | Redrawn as a right-aligned bubble in the rival color |
+| Desktop app | The app's own message row, right-aligned and framed in the rival color (so pasted images and attachments stay) |
 
-## Options
+Plugins can't reach Claude Code's window chrome (the sidebar, the prompt box, the
+app background) or recolor the desktop app's native bubble in place, so no theme
+can.
 
-In the studio's **Look** section:
+## Security and privacy
 
-- **Messages: full color / outline only / off.** *Outline only* keeps Claude Code's
-  own message rendering and adds just the colored border.
-- **Tools, spinner & panes: on / off.** Theme only the messages, or everything.
-- **Canvas: auto / dark / light.** See `/theme base`.
-- **Background for every theme.** Same as `/theme bg`.
+Chat Bubbles only draws. Checked with `claude plugin validate`, it calls:
 
-Animations follow Claude Code's `prefersReducedMotion` setting.
+| Engine API | Why |
+| --- | --- |
+| `$.ui.*` | Draw messages, the studio pane, toasts |
+| `$.state` / `$.store` | Remember your theme and options (local to your machine) |
+| `$.config.list` | Read whether Claude Code's theme is dark or light |
+| `$.settings.read` | Read `prefersReducedMotion` |
+| `$.command.register`, `$.clock` | The `/bubbles` command, the spinner shimmer |
 
-## Readability
+It makes **no network requests**, reads or writes **no files**, runs **no
+processes** and **never calls the model**. There are no runtime dependencies.
+Mods run with your permissions, so read the code before installing any mod,
+this one included: it's about 1,000 lines of TypeScript in
+[`chat-bubbles/hooks`](chat-bubbles/hooks).
 
-Each theme is resolved against its canvas before anything is drawn. Body text is
-held to WCAG AA (4.5:1) against its background and headings, chips and stripes to
-3:1. A color that falls short is nudged toward black or white just far enough,
-keeping as much of its hue as possible. The test suite checks every preset on both
-canvases.
-
-## Privacy
-
-Both plugins run entirely inside Claude Code's plugin sandbox. They make no network
-requests, read no files and send nothing anywhere. Neon Usage reads the same
-figures as Claude Code's status line (`/cost`, context and rate limits).
+Found a vulnerability? See [SECURITY.md](SECURITY.md).
 
 ## Development
 
 ```
-git clone https://github.com/allianceoptima/claude-theme-studio
-cd claude-theme-studio
-npm install
-claude --plugin-dir ./theme-studio --plugin-dir ./neon-usage   # try it; edits hot-reload
+git clone https://github.com/angeldelbiondo/claude-chat-bubbles
+cd claude-chat-bubbles
+claude --plugin-dir ./chat-bubbles   # edits hot-reload
 ```
 
 | Script | Does |
 | --- | --- |
-| `npm run typecheck` | `tsc` over both plugins and their tests (run `/plugin-types .claude/types` in Claude Code once first) |
-| `npm run validate` | `claude plugin validate` on the marketplace and both plugins |
-| `npm test` | `claude plugin test`: unit tests plus engine tests that draw on terminal and desktop |
-| `npm run check` | All of the above, plus a check that the shared color module is in sync |
+| `npm run typecheck` | `tsc` over the plugin and its tests (run `/plugin-types .claude/types` in Claude Code once first) |
+| `npm run validate` | `claude plugin validate` on the marketplace and the plugin |
+| `npm test` | `claude plugin test`: unit tests plus engine tests on terminal and desktop |
 
-Layout:
+See [CONTRIBUTING.md](CONTRIBUTING.md) to add a theme.
 
-```
-.claude-plugin/marketplace.json   the marketplace both plugins install from
-theme-studio/
-  hooks/register.tsx              engine hooks: commands, drawing, the studio pane
-  hooks/presets.ts                the 441 palettes
-  hooks/palette.ts                lookup, search, validation, random picks
-  hooks/look.ts                   a palette resolved against a canvas, contrast-checked
-  hooks/color.ts                  hex, mixing, gradients, WCAG contrast
-  hooks/markdown.tsx              the reply painter
-  types/index.d.ts                state contract
-  tests/                          unit and engine tests
-neon-usage/
-  hooks/register.tsx              the band
-  hooks/format.ts                 meters, countdowns, money
-  hooks/color.ts                  copy of theme-studio's (npm run sync:color)
-```
+## En español
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to add a theme or a collection.
+Chat Bubbles ordena el chat de Claude Code como cualquier app de mensajería: tus
+mensajes a la derecha, en un color rival al del tema (naranja si el tema es frío,
+celeste si es cálido), y los de Claude a la izquierda. Baja la intensidad de los
+441 temas y deja en gris las tools que terminaron bien, para que solo resalten
+las que fallan o están corriendo. Se instala con los dos comandos de arriba y se
+usa con `/bubbles <tema>`.
+
+## Credits
+
+Forked from [Theme Studio](https://github.com/allianceoptima/claude-theme-studio)
+by Alliance Optima, under the MIT license. The 441 palettes, the studio and the
+markdown painter are theirs.
 
 ## Trademarks
 

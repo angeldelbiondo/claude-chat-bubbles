@@ -1,16 +1,15 @@
 {
-  "name": "claude-theme-studio",
-  "version": "1.0.0",
+  "name": "claude-chat-bubbles",
+  "version": "0.1.0",
   "private": true,
-  "description": "Theme Studio and Neon Usage: color themes and a live usage band for Claude Code.",
+  "description": "Chat Bubbles: messenger-style chat for Claude Code.",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "typecheck": "tsc -p .",
-    "validate": "claude plugin validate . && claude plugin validate ./theme-studio && claude plugin validate ./neon-usage",
-    "test": "claude plugin test ./theme-studio && claude plugin test ./neon-usage",
-    "sync:color": "node scripts/sync-color.mjs",
-    "check": "node scripts/sync-color.mjs --check && npm run typecheck && npm run validate && npm test"
+    "validate": "claude plugin validate . && claude plugin validate ./chat-bubbles",
+    "test": "claude plugin test ./chat-bubbles",
+    "check": "npm run typecheck && npm run validate && npm test"
   },
   "devDependencies": {
     "typescript": "^5.9.0"

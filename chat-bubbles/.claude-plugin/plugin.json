@@ -1,0 +1,22 @@
+{
+  "name": "chat-bubbles",
+  "version": "0.1.0",
+  "description": "Messenger-style chat for Claude Code: your prompts on the right in a rival color, Claude on the left, only running or failing tools stand out. 441 themes.",
+  "author": {
+    "name": "Angel Del Biondo",
+    "url": "https://github.com/angeldelbiondo"
+  },
+  "homepage": "https://github.com/angeldelbiondo/claude-chat-bubbles",
+  "repository": "https://github.com/angeldelbiondo/claude-chat-bubbles",
+  "license": "MIT",
+  "keywords": [
+    "theme",
+    "chat",
+    "bubbles",
+    "messenger",
+    "colors",
+    "accessibility",
+    "ui"
+  ],
+  "types": "./types/index.d.ts"
+}

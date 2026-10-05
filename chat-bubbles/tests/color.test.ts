@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'claude-code/testing'
 
-import { contrast, ensureContrast, inkOn, isHex, loopGradient, mix, normalizeHex } from '../hooks/color'
+import { contrast, ensureContrast, hueOf, inkOn, isCool, isHex, loopGradient, mix, normalizeHex } from '../hooks/color'
 import { lookOf } from '../hooks/look'
 import { PRESETS } from '../hooks/presets'
 
@@ -42,6 +42,15 @@ describe('mix and gradients', () => {
   })
 })
 
+describe('rival color', () => {
+  test('a cool theme gets a warm bubble and a warm theme a cool one', () => {
+    expect(isCool('#00ff41')).toBe(true)
+    expect(isCool('#ff2bd6')).toBe(false)
+    expect(hueOf(lookOf(PRESETS.find(p => p.name === 'The Matrix')!, 'dark').you) < 60).toBe(true)
+    expect(hueOf(lookOf(PRESETS.find(p => p.name === "Synthwave '84")!, 'dark').you) > 180).toBe(true)
+  })
+})
+
 describe('every preset', () => {
   test('is well formed and uniquely named', () => {
     const names = new Set<string>()
@@ -56,7 +65,8 @@ describe('every preset', () => {
       for (const base of ['dark', 'light'] as const) {
         const look = lookOf(one, base)
         expect(contrast(look.text, look.replyBg) >= 4.5).toBe(true)
-        expect(contrast(look.promptText, look.promptBg) >= 4.5).toBe(true)
+        expect(contrast(look.youText, look.youBg) >= 4.5).toBe(true)
+        expect(contrast(look.you, look.youBg) >= 3).toBe(true)
         expect(contrast(look.accent, look.replyBg) >= 3).toBe(true)
       }
     }

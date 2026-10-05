@@ -13,7 +13,7 @@ const ENGINE = { timeoutMs: 20_000 }
 /** `/theme <args>` as the person would type it at an 80-column terminal. */
 const theme = ($: Engine, args: string) =>
   $.command.run({
-    command: 'theme',
+    command: 'bubbles',
     args,
     origin: { kind: 'composer' },
     presentation: { isFullscreen: false, columns: 80 },
@@ -44,27 +44,60 @@ describe('/theme', () => {
 })
 
 describe('drawing', () => {
-  for (const surface of SURFACES) {
-    test(`a prompt gets the YOU chip on ${surface}`, ENGINE, async $ => {
-      await theme($, 'synthwave')
-      const ui = await $.ui.mount({
-        plugin: 'theme-studio',
-        surface,
-        component: 'UserMessage',
-        props: { text: 'make it pop', origin: { kind: 'sdk' }, isExpanded: true },
-      })
-      expect(await ui.find({ type: 'Text', text: 'YOU' })).toBeTruthy()
+  test('a prompt is redrawn as a right-hand bubble in the terminal', ENGINE, async $ => {
+    await theme($, 'matrix')
+    const ui = await $.ui.mount({
+      plugin: 'chat-bubbles',
+      surface: 'terminal',
+      component: 'UserMessage',
+      props: { text: 'make it pop', origin: { kind: 'composer' }, isExpanded: true },
     })
+    expect(await ui.find({ type: 'Text', text: 'make it pop' })).toBeTruthy()
+    expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBeTruthy()
+  })
+
+  test('on desktop a prompt keeps the engine row (and its images) inside the bubble', ENGINE, async ($, on) => {
+    on('ui.render', { component: 'UserMessage' }, ($, e) => {
+      const { Text } = $.ui.resolve(e)
+      return <Text>engine row with image</Text>
+    })
+    await theme($, 'matrix')
+    const ui = await $.ui.mount({
+      plugin: 'chat-bubbles',
+      surface: 'desktop',
+      component: 'UserMessage',
+      props: { text: 'look at this', origin: { kind: 'sdk' }, isExpanded: true },
+    })
+    expect(await ui.find({ type: 'Text', text: 'engine row with image' })).toBeTruthy()
+    expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBeTruthy()
+  })
+
+  test('on desktop tool rows are left to the engine: no empty stripe', ENGINE, async ($, on) => {
+    on('ui.render', { component: 'ToolGroup' }, ($, e) => {
+      const { Text } = $.ui.resolve(e)
+      return <Text>engine group</Text>
+    })
+    await theme($, 'matrix')
+    const ui = await $.ui.mount({
+      plugin: 'chat-bubbles',
+      surface: 'desktop',
+      component: 'ToolGroup',
+      props: { calls: [], isActive: true, isExpanded: false },
+    })
+    expect(await ui.find({ type: 'Text', text: '▍' })).toBe(undefined)
+  })
+
+  for (const surface of SURFACES) {
 
     test(`a reply is painted in theme colors on ${surface}`, ENGINE, async $ => {
       await theme($, 'nord')
       const ui = await $.ui.mount({
-        plugin: 'theme-studio',
+        plugin: 'chat-bubbles',
         surface,
         component: 'AssistantMessage',
         props: { text: '# Plan\n- one **bold** step\n- `code` here', isFirstOfReply: true },
       })
-      expect(await ui.find({ type: 'Text', text: 'CLAUDE' })).toBeTruthy()
+      expect(await ui.find({ type: 'Text', text: '✦ Claude' })).toBeTruthy()
       expect(await ui.find({ type: 'Text', text: 'bold' })).toBeTruthy()
     })
 
@@ -77,7 +110,7 @@ describe('drawing', () => {
       })
       await theme($, 'dracula')
       const ui = await $.ui.mount({
-        plugin: 'theme-studio',
+        plugin: 'chat-bubbles',
         surface,
         component: 'SessionMode',
         props: { modes: ['accept edits on'] },
@@ -85,7 +118,7 @@ describe('drawing', () => {
       const chip = await ui.find({ type: 'Button', key: 'open-studio' })
       expect(chip?.props.label).toBe('🎨 Dracula')
       await ui.press({ key: 'open-studio' })
-      expect(opened).toEqual([{ id: 'theme-studio', columns: 64, focus: true }])
+      expect(opened).toEqual([{ id: 'chat-bubbles', columns: 64, focus: true }])
     })
 
     test(`with no theme the engine draws its own on ${surface}`, ENGINE, async ($, on) => {
@@ -96,12 +129,12 @@ describe('drawing', () => {
       })
       await theme($, 'off')
       const ui = await $.ui.mount({
-        plugin: 'theme-studio',
+        plugin: 'chat-bubbles',
         surface,
         component: 'UserMessage',
         props: { text: 'plain', origin: { kind: 'sdk' }, isExpanded: true },
       })
-      expect(await ui.find({ type: 'Text', text: 'YOU' })).toBe(undefined)
+      expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBe(undefined)
       expect(await ui.find({ type: 'Text', text: 'engine row' })).toBeTruthy()
     })
   }
