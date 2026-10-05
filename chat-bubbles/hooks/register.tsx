@@ -12,7 +12,7 @@ import { isHex, loopGradient, normalizeHex } from './color'
 import { lookOf, stripOf } from './look'
 import type { Base, Look } from './look'
 import { paint } from './markdown'
-import { blocksOf, carriesMedia, remember } from './media'
+import { blocksOf, carriesMedia, isSeen, persistable, remember } from './media'
 import {
   DEFAULT_CUSTOM,
   GROUPS,
@@ -167,6 +167,8 @@ async function restore($: EngineInterface) {
   if (typeof storedChrome === 'boolean') await update($, themeChrome, () => storedChrome)
   const storedBase = await get('base')
   if (BASES.includes(storedBase as BaseMode)) await update($, base, () => storedBase as BaseMode)
+  const storedMedia = await get('media')
+  if (isSeen(storedMedia)) await update($, media, seen => ({ ...storedMedia, ...seen }))
   const storedBg = await get('bgOverride')
   if (storedBg === null || isHex(storedBg)) await update($, bgOverride, () => storedBg)
   try {
@@ -329,12 +331,17 @@ export const register: Register = on => {
     }
   })
 
-  // Note which prompts carry media, before they are drawn.
-  on('session.append', { door: 'prompt' }, async ($, e, next) => {
-    const blocks = blocksOf(e.message.content)
-    await update($, media, seen => remember(seen, e.uuid, blocks))
-    return next(e)
-  })
+  // Note which prompts carry media, before they are drawn. A slash command's own
+  // row comes in by another door; its stored text is the command's markup, so
+  // only its id is kept.
+  for (const door of ['prompt', 'command'] as const) {
+    on('session.append', { door }, async ($, e, next) => {
+      const blocks = blocksOf(e.message.content)
+      const seen = await update($, media, was => remember(was, e.uuid, blocks, door === 'prompt'))
+      await persist($, 'media', persistable(seen))
+      return next(e)
+    })
+  }
 
   // Your prompts: a bubble on the right in the rival color, the way every
   // messenger does it. Other user-role rows (task notifications, messages from
@@ -393,12 +400,18 @@ export const register: Register = on => {
         </Text>
       </Box>
     )
-    // A prompt known to have no media is just the bubble. One with media, or
-    // one never seen, also gets the app's own row without its text above the
-    // bubble: the images and files, outside the colored block. Nothing wraps
+    // A prompt known to have no media is just the bubble. One with media also
+    // gets the app's own row without its text above the bubble: the images and
+    // files, outside the colored block. Nothing wraps
     // that row (a wrapper shrinks it and breaks its own right alignment); the
     // empty pill it leaves is covered by pulling the bubble up.
-    if (carriesMedia(await read($, media), e.requestId, e.props.text) === false) return right(text)
+    // The terminal draws images as text inside the prompt, so there it is just the bubble.
+    if (e.surface === 'terminal') return right(text)
+    // Never seen (sent before the mod was installed): the app's own row, so
+    // nothing is lost and no empty pill is left behind.
+    const known = carriesMedia(await read($, media), e.requestId, e.props.text)
+    if (known === undefined) return next(e)
+    if (!known) return right(text)
     return (
       <Box flexDirection="column">
         {await next({ ...e, props: { ...e.props, text: '' } })}

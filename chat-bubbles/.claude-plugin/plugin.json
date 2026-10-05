@@ -1,6 +1,6 @@
 {
   "name": "chat-bubbles",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Messenger-style chat for Claude Code: your prompts on the right in a rival color, Claude on the left, only running or failing tools stand out. 441 themes.",
   "author": {
     "name": "Angel Del Biondo",

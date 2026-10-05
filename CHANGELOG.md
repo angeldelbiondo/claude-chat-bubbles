@@ -3,6 +3,24 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.6] — 2026-10-05
+
+### Fixed
+
+- A gray bump showed at the corner of slash command bubbles (`/reload-plugins`,
+  `/bubbles`…): those rows come in by another door that the mod did not note, so
+  it drew the app's row (with its empty pill) for them. They are noted now.
+
+### Changed
+
+- A prompt the mod never saw (sent before it was installed) keeps the app's own
+  look instead of getting a bubble over the app's row: no stray pill, no image lost.
+- The row ids and a yes/no (never text) are written to the plugin store, so earlier
+  prompts keep their look after a restart.
+- On the terminal a prompt is just the bubble again, as before 0.1.3.
+- Tests store rows through the plugin's real `session.append` hook, so the whole
+  path (store the row, then draw it) is covered.
+
 ## Chat Bubbles [0.1.5] — 2026-10-05
 
 ### Fixed

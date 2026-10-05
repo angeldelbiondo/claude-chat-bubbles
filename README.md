@@ -85,6 +85,8 @@ suite checks every theme on both canvases.
 | `frame` | The app's own message row, framed in the rival color | Keeps pasted images, but the app sizes its row, so the frame can be tight and leave empty space |
 | `native` | The app's own row, untouched | No rival color |
 
+Prompts sent before the mod was installed are left in the app's own look (the mod never saw them, so it can't tell whether they carry an image), and nothing is lost.
+
 ## Where it draws (and where it can't)
 
 Plugins can't reach Claude Code's window chrome (the sidebar, the prompt box, the
@@ -102,7 +104,7 @@ Chat Bubbles only draws. Checked with `claude plugin validate`, it calls:
 | --- | --- |
 | `$.ui.*` | Draw messages, the studio pane, toasts |
 | `$.state` / `$.store` | Remember your theme and options (local to your machine) |
-| `session.append` (your prompts only) | Notes, per prompt, whether it carries an image or file, so the app's row is drawn only for those. Kept in session memory, keyed by the row id and by the first 200 characters of the prompt; never written to disk, never sent anywhere |
+| `session.append` (your prompts and slash commands) | Notes, per row, whether it carries an image or file, so the app's row is drawn only for those. In session memory it is keyed by the row id and the first 200 characters of what you typed; what is written to the plugin store is only the row id and a yes/no, never any text. Nothing is sent anywhere |
 | `$.config.list` | Read whether Claude Code's theme is dark or light |
 | `$.settings.read` | Read `prefersReducedMotion` |
 | `$.command.register`, `$.clock` | The `/bubbles` command, the spinner shimmer |
