@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 
-import { blocksOf, hasMedia, isSeen, remember } from '../hooks/media'
-import { ENGINE_ROW, image, store, text } from './helpers'
+import { blocksOf, clean, hasMedia, remember } from '../hooks/media'
+import { ENGINE_ROW, id, image, store, text } from './helpers'
 
 const ENGINE = { timeoutMs: 20_000 }
 
@@ -21,24 +21,23 @@ describe('media record', () => {
   })
 
   test('only the row id and a yes/no are kept, never any text', () => {
-    const seen = remember(remember({}, 'a1', [text('secreto')]), 'a2', [image, text('foto privada [Image: source: x.png]')])
-    expect(seen).toEqual({ a1: false, a2: true })
+    const seen = remember(remember({}, id(1), [text('secreto')]), id(2), [image, text('foto privada [Image: source: x.png]')])
+    expect(seen).toEqual({ [id(1)]: false, [id(2)]: true })
+  })
+
+  test('text keys left by an older version (in session state or in the store) are dropped', () => {
+    const dirty = { 'ahora se ve asi': true, 't:hola estoy probando': false, [id(3)]: true, [id(4)]: 'si', loose: false }
+    expect(clean(dirty)).toEqual({ [id(3)]: true })
+    expect(remember(dirty as never, id(5), [text('x')])).toEqual({ [id(3)]: true, [id(5)]: false })
   })
 
   test('an unseen row is unknown, and the record stays bounded', () => {
-    expect(remember({}, 'a1', [text('x')]).never).toBe(undefined)
+    expect(remember({}, id(1), [text('x')])[id(9)]).toBe(undefined)
     let seen = {}
-    for (let i = 0; i < 2100; i++) seen = remember(seen, `id-${i}`, [text(`t-${i}`)])
+    for (let i = 0; i < 2100; i++) seen = remember(seen, id(i), [text(`t-${i}`)])
     expect(Object.keys(seen).length).toBe(2000)
-    expect((seen as Record<string, boolean>)['id-2099']).toBe(false)
-    expect((seen as Record<string, boolean>)['id-0']).toBe(undefined)
-  })
-
-  test('only a record of booleans is trusted after a restart', () => {
-    expect(isSeen({ a: true, b: false })).toBe(true)
-    expect(isSeen({ a: 'x' })).toBe(false)
-    expect(isSeen(['a'])).toBe(false)
-    expect(isSeen(null)).toBe(false)
+    expect((seen as Record<string, boolean>)[id(2099)]).toBe(false)
+    expect((seen as Record<string, boolean>)[id(0)]).toBe(undefined)
   })
 })
 
@@ -60,15 +59,15 @@ const CANVAS = '#15151b'
 describe('the prompt row on desktop', () => {
   test('a prompt the mod never saw is left to the app: nothing lost, no pill', ENGINE, async ($, on) => {
     on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
-    const ui = await mountPrompt($, 'before-install', 'de antes de instalar')
+    const ui = await mountPrompt($, id(20), 'de antes de instalar')
     expect(await ui.find({ type: 'engine' })).toBeTruthy()
     expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBe(undefined)
   })
 
   test('a prompt stored with text only is just the bubble, with no plate', ENGINE, async ($, on) => {
     on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
-    await store($, 'txt-1', 'solo texto')
-    const ui = await mountPrompt($, 'txt-1', 'solo texto')
+    await store($, id(21), 'solo texto')
+    const ui = await mountPrompt($, id(21), 'solo texto')
     expect(await ui.find({ type: 'engine' })).toBe(undefined)
     expect(await ui.find({ type: 'Text', text: 'solo texto' })).toBeTruthy()
     const boxes = await ui.findAll({ type: 'Box' })
@@ -77,8 +76,8 @@ describe('the prompt row on desktop', () => {
 
   test('a slash command row is just the bubble too', ENGINE, async ($, on) => {
     on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
-    await store($, 'cmd-1', [text('<command-name>/reload-plugins</command-name>')], 'command')
-    const ui = await mountPrompt($, 'cmd-1', '/reload-plugins')
+    await store($, id(22), [text('<command-name>/reload-plugins</command-name>')], 'command')
+    const ui = await mountPrompt($, id(22), '/reload-plugins')
     expect(await ui.find({ type: 'engine' })).toBe(undefined)
     expect(await ui.find({ type: 'Text', text: '/reload-plugins' })).toBeTruthy()
   })
@@ -90,8 +89,8 @@ describe('the prompt row on desktop', () => {
   // top-right one, so the bubble sits on a plate of the canvas color.
   test('a prompt with an image: bare app row, bubble pulled up over the pill on a canvas plate', ENGINE, async ($, on) => {
     on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
-    await store($, 'img-1', [image, text('mira esto'), text('[Image: source: x.png]')])
-    const ui = await mountPrompt($, 'img-1', 'mira esto')
+    await store($, id(23), [image, text('mira esto'), text('[Image: source: x.png]')])
+    const ui = await mountPrompt($, id(23), 'mira esto')
     expect(await ui.find({ type: 'engine' })).toBeTruthy()
     expect(await ui.find({ type: 'Text', text: 'mira esto' })).toBeTruthy()
     const bubble = await ui.find({ type: 'Box', key: 'you-bubble' })
@@ -105,8 +104,8 @@ describe('the prompt row on desktop', () => {
 
   test('an image with no text is the app row alone', ENGINE, async ($, on) => {
     on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
-    await store($, 'img-2', [image])
-    const ui = await mountPrompt($, 'img-2', '')
+    await store($, id(24), [image])
+    const ui = await mountPrompt($, id(24), '')
     expect(await ui.find({ type: 'engine' })).toBeTruthy()
     expect(await ui.find({ type: 'Box', key: 'you-bubble' })).toBe(undefined)
   })

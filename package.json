@@ -1,6 +1,6 @@
 {
   "name": "claude-chat-bubbles",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "description": "Chat Bubbles: messenger-style chat for Claude Code.",
   "license": "MIT",

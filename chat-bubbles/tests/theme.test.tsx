@@ -4,7 +4,7 @@
 import { describe, expect, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 
-import { ENGINE_ROW, store } from './helpers'
+import { ENGINE_ROW, id, store } from './helpers'
 
 const SURFACES = ['terminal', 'desktop'] as const
 
@@ -80,13 +80,14 @@ describe('drawing', () => {
   for (const surface of SURFACES) {
     test(`bubble mode draws a text bubble on the right on ${surface}`, ENGINE, async ($, on) => {
       on('ui.render', { component: 'UserMessage' }, ENGINE_ROW)
-      await store($, `p-${surface}`, 'hola mundo')
+      const row = id(surface === 'terminal' ? 30 : 31)
+      await store($, row, 'hola mundo')
       await theme($, 'matrix')
       const ui = await $.ui.mount({
         plugin: 'chat-bubbles',
         surface,
         component: 'UserMessage',
-        requestId: `p-${surface}`,
+        requestId: row,
         props: { text: 'hola mundo', origin: { kind: 'sdk' }, isExpanded: true },
       })
       expect(await ui.find({ type: 'Text', text: 'hola mundo' })).toBeTruthy()

@@ -3,6 +3,16 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.8] — 2026-10-05
+
+### Fixed
+
+- Two fragments of what you typed could end up in the plugin store. Versions up to
+  0.1.5 kept the start of each prompt as a record key in session state, session
+  state outlives a reload, and 0.1.6 and 0.1.7 wrote the whole record to disk. The
+  record is now cleaned to row ids (uuids) with a yes/no on every write and when
+  the mod loads, which also cleans a store written by those versions.
+
 ## Chat Bubbles [0.1.7] — 2026-10-05
 
 ### Fixed

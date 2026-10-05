@@ -6,6 +6,9 @@ import type { Engine } from 'claude-code/testing'
 export const text = (t: string) => ({ type: 'text', text: t })
 export const image = { type: 'image' }
 
+/** A row id of the real shape (a uuid), numbered. */
+export const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
+
 /** The engine's own drawing of the row: a leaf node. */
 export const ENGINE_ROW = () => ({ type: 'engine', ref: 0 }) as never
 

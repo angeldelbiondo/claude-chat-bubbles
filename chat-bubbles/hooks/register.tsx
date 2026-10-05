@@ -12,7 +12,7 @@ import { isHex, loopGradient, normalizeHex } from './color'
 import { lookOf, stripOf } from './look'
 import type { Base, Look } from './look'
 import { paint } from './markdown'
-import { blocksOf, isSeen, remember } from './media'
+import { blocksOf, clean, remember } from './media'
 import {
   DEFAULT_CUSTOM,
   GROUPS,
@@ -167,8 +167,10 @@ async function restore($: EngineInterface) {
   if (typeof storedChrome === 'boolean') await update($, themeChrome, () => storedChrome)
   const storedBase = await get('base')
   if (BASES.includes(storedBase as BaseMode)) await update($, base, () => storedBase as BaseMode)
+  // Only row ids stay: a store or session state from an older version can hold text.
   const storedMedia = await get('media')
-  if (isSeen(storedMedia)) await update($, media, seen => ({ ...storedMedia, ...seen }))
+  const stored = typeof storedMedia === 'object' && storedMedia !== null && !Array.isArray(storedMedia) ? storedMedia : {}
+  await persist($, 'media', await update($, media, seen => clean({ ...stored, ...seen })))
   const storedBg = await get('bgOverride')
   if (storedBg === null || isHex(storedBg)) await update($, bgOverride, () => storedBg)
   try {

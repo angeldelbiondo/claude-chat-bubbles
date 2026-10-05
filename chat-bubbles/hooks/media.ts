@@ -8,6 +8,13 @@ export type Seen = Readonly<Record<string, boolean>>
 type Block = { type: string; text?: string }
 
 const KEPT = 2000
+// A row id is a uuid. Anything else in a record is dropped: an older version kept
+// the start of what you typed as a key, and session state outlives a reload.
+const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** The record reduced to row id -> yes/no, the newest KEPT of them. */
+export const clean = (record: Record<string, unknown>): Seen =>
+  Object.fromEntries(Object.entries(record).filter((entry): entry is [string, boolean] => ID.test(entry[0]) && typeof entry[1] === 'boolean').slice(-KEPT))
 
 /** A stored prompt's blocks: a plain prompt is stored as a bare string. */
 export const blocksOf = (content: unknown): Block[] =>
@@ -16,12 +23,5 @@ export const blocksOf = (content: unknown): Block[] =>
 /** Whether a row's blocks hold anything but text (an image, a document). */
 export const hasMedia = (blocks: readonly Block[]) => blocks.some(b => b.type !== 'text')
 
-/** The record with a stored row added, oldest dropped past the limit. */
-export const remember = (seen: Seen, uuid: string, blocks: readonly Block[]): Seen => {
-  const entries = Object.entries({ ...seen, [uuid]: hasMedia(blocks) })
-  return Object.fromEntries(entries.slice(-KEPT))
-}
-
-/** Whether a stored value is a record of booleans, fit to trust after a restart. */
-export const isSeen = (value: unknown): value is Seen =>
-  typeof value === 'object' && value !== null && !Array.isArray(value) && Object.values(value).every(v => typeof v === 'boolean')
+/** The record with a stored row added. */
+export const remember = (seen: Seen, uuid: string, blocks: readonly Block[]): Seen => clean({ ...seen, [uuid]: hasMedia(blocks) })
