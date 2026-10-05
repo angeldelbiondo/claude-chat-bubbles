@@ -3,6 +3,16 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Chat Bubbles [0.1.1] — 2026-10-04
+
+### Fixed
+
+- Your prompts were never restyled on desktop: the tree wrapped the engine's own
+  row in a Box with `width`, which the engine refuses (it then draws its own row,
+  unchanged). The row now takes its width from the parent.
+- Tests draw a real engine node instead of a Text stand-in, so a refused tree
+  like this one fails in CI.
+
 ## Chat Bubbles [0.1.0] — 2026-10-04
 
 Forked from Theme Studio 1.1.0.
